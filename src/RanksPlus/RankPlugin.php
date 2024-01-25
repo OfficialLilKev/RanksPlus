@@ -1,6 +1,6 @@
 <?php
 
-namespace YourPluginNamespace;
+namespace RanksPlus;
 
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerJoinEvent;
