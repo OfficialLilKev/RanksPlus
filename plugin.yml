@@ -1,5 +1,5 @@
 name: RankPlugin
 version: 1.0.0
 api: [4.0.0, 5.0.0]
-main: RankPlus\RankPlugin
+main: RanksPlus\RankPlugin
 author: BajanDoesYT
