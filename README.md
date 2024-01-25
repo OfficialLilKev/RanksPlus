@@ -35,3 +35,24 @@ vip:
   suffix: "&r"
   permissions:
     - "vip.permission"
+
+Permissions Configuration (permissions.yml)
+Edit the permissions.yml file to assign specific permissions to individual players.
+
+Example permissions.yml:
+
+yaml
+Copy code
+player1:
+  - "example.permission"
+
+player2:
+  - "another.permission"
+  - "some.other.permission"
+Usage
+Define Ranks: Edit ranks.yml to create and configure your server's ranks.
+Set Permissions: Assign permissions to each rank in the ranks.yml file.
+Customize Prefixes and Suffixes: Personalize player name tags by adjusting prefixes and suffixes in ranks.yml.
+Restart Server: Restart your server to apply the changes.
+Support
+For any issues, feature requests, or questions, please open an issue.
