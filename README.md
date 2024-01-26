@@ -41,8 +41,6 @@ Edit the permissions.yml file to assign specific permissions to individual playe
 
 Example permissions.yml:
 
-yaml
-Copy code
 player1:
   - "example.permission"
 
