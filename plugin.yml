@@ -1,5 +1,10 @@
 name: RankPlugin
-version: 1.0.0
+version: 1.0.1
 api: [4.0.0, 5.0.0]
 main: RanksPlus\RankPlugin
 author: BajanDoesYT
+commands:
+  setrank:
+    description: Set the rank of a player
+    usage: /setrank <rank> <player>
+    permission: ranksplus.setrank
