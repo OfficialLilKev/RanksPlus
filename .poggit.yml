@@ -5,4 +5,5 @@ branches:
 projects:
   RanksPlus:
     path: ""
+    icon: RankPlus.jpeg
 ...
