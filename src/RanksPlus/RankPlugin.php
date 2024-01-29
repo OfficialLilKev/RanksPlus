@@ -16,7 +16,7 @@ class RankPlugin extends PluginBase implements Listener {
     private $ranks;
     private $permissions;
 
-    public function onEnable() {
+    public function onEnable(): void {
         $this->saveResource("ranks.yml", false);
         $this->saveResource("permissions.yml", false);
 
