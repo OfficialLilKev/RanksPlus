@@ -31,6 +31,14 @@ class RankPlugin extends PluginBase implements Listener {
         $player = $event->getPlayer();
         $name = $player->getName();
 
+        // Check if PiggyFactions is loaded
+        $piggyFactions = $this->getServer()->getPluginManager()->getPlugin("PiggyFactions");
+        if ($piggyFactions !== null && $piggyFactions->isEnabled()) {
+            $faction = $piggyFactions->getPlayerFaction($player);
+            // Handle faction-related logic here (e.g., add faction tag to player's name)
+            $player->setNameTag("[$faction] " . $player->getName());
+        }
+
         // Check if the player already has a rank
         if (!$this->ranks->exists(strtolower($name))) {
             // Player doesn't have a rank, set default rank
