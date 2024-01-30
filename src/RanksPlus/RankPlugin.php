@@ -27,33 +27,33 @@ class RankPlugin extends PluginBase implements Listener {
         $this->getLogger()->info("RankPlus has been enabled!");
     }
 
-    public function onJoin(PlayerJoinEvent $event) {
-        $player = $event->getPlayer();
-        $name = $player->getName();
+public function onJoin(PlayerJoinEvent $event) {
+    $player = $event->getPlayer();
+    $name = $player->getName();
 
-        // Check if PiggyFactions is loaded
-        $piggyFactions = $this->getServer()->getPluginManager()->getPlugin("PiggyFactions");
-        if ($piggyFactions !== null && $piggyFactions->isEnabled()) {
-            $faction = $piggyFactions->getPlayerFaction($player);
-            // Handle faction-related logic here (e.g., add faction tag to player's name)
-            $player->setNameTag("[$faction] " . $player->getName());
-        }
-
-        // Check if the player already has a rank
-        if (!$this->ranks->exists(strtolower($name))) {
-            // Player doesn't have a rank, set default rank
-            $this->setPlayerRank($name, 'Member');
-        }
-
-        // Get player's rank
-        $rank = $this->getPlayerRank($name);
-
-        // Apply permissions
-        $player->addAttachment($this, $rank['permissions'], true);
-
-        // Apply prefix and suffix
-        $player->setNameTag($rank['prefix'] . $name . $rank['suffix']);
+    // Check if PiggyFactions is loaded
+    $piggyFactions = $this->getServer()->getPluginManager()->getPlugin("PiggyFactions");
+    if ($piggyFactions !== null && $piggyFactions->isEnabled() && method_exists($piggyFactions, 'getPlayerFaction')) {
+        $faction = $piggyFactions->getPlayerFaction($player);
+        // Handle faction-related logic here (e.g., add faction tag to player's name)
+        $player->setNameTag("[$faction] " . $player->getName());
     }
+
+    // Check if the player already has a rank
+    if (!$this->ranks->exists(strtolower($name))) {
+        // Player doesn't have a rank, set default rank
+        $this->setPlayerRank($name, 'Member');
+    }
+
+    // Get player's rank
+    $rank = $this->getPlayerRank($name);
+
+    // Apply permissions
+    $player->addAttachment($this, $rank['permissions'], true);
+
+    // Apply prefix and suffix
+    $player->setNameTag($rank['prefix'] . $name . $rank['suffix']);
+}
 
     private function getPlayerRank($playerName) {
         $defaultRank = [
