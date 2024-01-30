@@ -53,6 +53,12 @@ public function onJoin(PlayerJoinEvent $event) {
 
     // Apply prefix and suffix
     $player->setNameTag($rank['prefix'] . $name . $rank['suffix']);
+
+    // Set display name with rank
+    $player->setDisplayName($rank['prefix'] . $name . $rank['suffix']);
+
+    // Set the rank above the player's head
+    $player->sendPopup($rank['prefix'] . $rank['suffix']);
 }
 
     private function getPlayerRank($playerName) {
