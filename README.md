@@ -5,6 +5,7 @@ RanksPlus is a PocketMine-MP plugin designed to enhance your server's ranking sy
 ## Features
 
 - Customizable Ranks: Define unique ranks for your server, each with its own set of permissions.
+- Intergration with PiggyFactions full support
 - Permissions System: Grant specific permissions to each rank to control access to commands and features.
 - Prefixes and Suffixes: Personalize player name tags with custom prefixes and suffixes for each rank.
 - Easy Configuration: Configure and customize ranks, permissions, prefixes, and suffixes via YAML files.
@@ -47,9 +48,6 @@ player1:
 player2:
   - "another.permission"
   - "some.other.permission"
-
-Integration with PiggyFactions
-RanksPlus now supports integration with PiggyFactions. Players' ranks can be synchronized with their faction roles.
 
 Usage
 Define Ranks: Edit ranks.yml to create and configure your server's ranks.
