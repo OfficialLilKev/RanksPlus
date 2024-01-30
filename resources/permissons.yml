@@ -1,0 +1,6 @@
+player1:
+  - "example.permission"
+
+player2:
+  - "another.permission"
+  - "some.other.permission"
