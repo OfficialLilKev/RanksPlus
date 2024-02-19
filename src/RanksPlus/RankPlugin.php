@@ -81,22 +81,22 @@ public function onJoin(PlayerJoinEvent $event) {
         ];
     }
 
-    public function onCommand(CommandSender $sender, Command $command, string $label, array $args): bool {
-        if ($command->getName() === "setrank" && $sender->hasPermission("ranksplus.setrank")) {
-            if (count($args) === 2) {
-                $rankName = $args[0];
-                $playerName = $args[1];
+public function onCommand(CommandSender $sender, Command $command, string $label, array $args): bool {
+    if ($command->getName() === "setrank" && $sender->hasPermission("ranksplus.setrank")) {
+        if (count($args) === 2) {
+            $rankName = $args[0];
+            $playerName = $args[1];
 
-                $this->setPlayerRank($playerName, $rankName);
-                $sender->sendMessage("Set rank of $playerName to $rankName.");
-                return true;
-            } else {
-                $sender->sendMessage("Usage: /setrank <rank> <player>");
-                return false;
-            }
+            $this->setPlayerRank($playerName, $rankName);
+            $sender->sendMessage("Set rank of $playerName to $rankName.");
+            return true;
+        } else {
+            $sender->sendMessage("Usage: /setrank <rank> <player>");
+            return false;
         }
-        return false;
     }
+    return false;
+}
 
     private function setPlayerRank($playerName, $rankName) {
         // Set the rank for the player in the ranks.yml file
