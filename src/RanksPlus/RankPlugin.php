@@ -2,122 +2,114 @@
 
 namespace RanksPlus;
 
-use pocketmine\command\Command;
-use pocketmine\command\CommandSender;
+use pocketmine\plugin\PluginBase;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerJoinEvent;
-use pocketmine\Player;
-use pocketmine\plugin\PluginBase;
+use pocketmine\command\Command;
+use pocketmine\command\CommandSender;
+use pocketmine\permission\PermissionAttachment;
 use pocketmine\utils\Config;
-use pocketmine\utils\TextFormat;
+use pocketmine\player\Player;
 
 class RankPlugin extends PluginBase implements Listener {
 
+    /** @var Config */
     private $ranks;
-    private $permissions;
+
+    /** @var PermissionAttachment[] */
+    private $attachments = [];
 
     public function onEnable(): void {
+        @mkdir($this->getDataFolder());
         $this->saveResource("ranks.yml", false);
-        $this->saveResource("permissions.yml", false);
 
         $this->ranks = new Config($this->getDataFolder() . "ranks.yml", Config::YAML);
-        $this->permissions = new Config($this->getDataFolder() . "permissions.yml", Config::YAML);
 
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
         $this->getLogger()->info("RankPlus has been enabled!");
-
-        // Register the "ranksplus.setrank" permission node if not already registered
-        $permission = $this->getServer()->getPluginManager()->getPermission("ranksplus.setrank");
-        if ($permission === null) {
-            $this->getServer()->getPluginManager()->addPermission(new \pocketmine\permission\Permission("ranksplus.setrank", "Allows players to set ranks."));
-        }
     }
 
     public function onJoin(PlayerJoinEvent $event): void {
         $player = $event->getPlayer();
-        $name = $player->getName();
-
-        // Check if PiggyFactions is loaded
-        $piggyFactions = $this->getServer()->getPluginManager()->getPlugin("PiggyFactions");
-        if ($piggyFactions !== null && $piggyFactions->isEnabled() && method_exists($piggyFactions, 'getPlayerFaction')) {
-            $faction = $piggyFactions->getPlayerFaction($player);
-            // Handle faction-related logic here (e.g., add faction tag to player's name)
-            $player->setNameTag("[$faction] " . $player->getName());
-        }
-
-        // Check if the player already has a rank
-        if (!$this->ranks->exists(strtolower($name))) {
-            // Player doesn't have a rank, set default rank
-            $this->setPlayerRank($name, 'Member');
-        }
-
-        // Get player's rank
-        $rank = $this->getPlayerRank($name);
-
-        // Apply permissions
-        $player->addAttachment($this, $rank['permissions'], true);
-
-        // Apply prefix and suffix
-        $player->setNameTag($rank['prefix'] . $name . $rank['suffix']);
-
-        // Set display name with rank
-        $player->setDisplayName($rank['prefix'] . $name . $rank['suffix']);
-
-        // Set the rank above the player's head
-        $player->sendPopup($rank['prefix'] . $rank['suffix']);
+        $this->applyRankToPlayer($player);
     }
 
     public function onCommand(CommandSender $sender, Command $command, string $label, array $args): bool {
-        if ($command->getName() === "setrank" && $sender->hasPermission("ranksplus.setrank")) {
-            if (count($args) === 2) {
-                $rankName = $args[0];
-                $playerName = $args[1];
-
-                $this->setPlayerRank($playerName, $rankName);
-                $sender->sendMessage("Set rank of $playerName to $rankName.");
+        if ($command->getName() === "setrank") {
+            if (!$sender->hasPermission("ranksplus.setrank")) {
+                $sender->sendMessage("§cYou do not have permission to use this command.");
                 return true;
-            } else {
-                $sender->sendMessage("Usage: /setrank <rank> <player>");
+            }
+
+            if (count($args) !== 2) {
+                $sender->sendMessage("§cUsage: /setrank <rank> <player>");
                 return false;
             }
+
+            $rankName = strtoupper($args[0]);
+            $playerName = strtolower($args[1]);
+
+            if (!$this->ranks->exists($rankName)) {
+                $sender->sendMessage("§cRank '$rankName' does not exist.");
+                return true;
+            }
+
+            $this->setPlayerRankName($playerName, $rankName);
+            $sender->sendMessage("§aSet rank of $playerName to $rankName.");
+
+            $player = $this->getServer()->getPlayerExact($args[1]);
+            if ($player !== null) {
+                $this->applyRankToPlayer($player);
+            }
+
+            return true;
         }
         return false;
     }
 
-    private function setPlayerRank($playerName, $rankName): void {
-        // Set the rank for the player in the ranks.yml file
-        $this->ranks->set(strtolower($playerName), [
-            'prefix' => TextFormat::WHITE, // You can customize the default prefix
-            'suffix' => TextFormat::RESET, // You can customize the default suffix
-            'permissions' => $this->getRankPermissions($rankName),
-        ]);
+    private function applyRankToPlayer(Player $player): void {
+        $name = strtolower($player->getName());
+
+        $rankName = $this->getPlayerRankName($name);
+        $rankData = $this->ranks->get($rankName);
+
+        if ($rankData === null) {
+            $this->getLogger()->warning("Rank '$rankName' does not exist in ranks.yml. Defaulting to Member.");
+            $rankData = $this->ranks->get("Member");
+        }
+
+        // Remove old attachment if exists
+        if (isset($this->attachments[$name])) {
+            $player->removeAttachment($this->attachments[$name]);
+        }
+
+        $attachment = $player->addAttachment($this);
+        $this->attachments[$name] = $attachment;
+
+        if (isset($rankData['permissions']) && is_array($rankData['permissions'])) {
+            foreach ($rankData['permissions'] as $permission) {
+                $attachment->setPermission($permission, true);
+            }
+        }
+
+        $prefix = $rankData['prefix'] ?? "§7";
+        $suffix = $rankData['suffix'] ?? "";
+
+        $player->setNameTag($prefix . $player->getName() . $suffix);
+        $player->setDisplayName($prefix . $player->getName() . $suffix);
+        $player->sendPopup($prefix . $suffix);
+    }
+
+    private function getPlayerRankName(string $playerName): string {
+        $playerRank = $this->ranks->get(strtolower($playerName));
+        if (is_array($playerRank) && isset($playerRank['rank'])) {
+            return strtoupper($playerRank['rank']);
+        }
+        return "Member";
+    }
+
+    private function setPlayerRankName(string $playerName, string $rankName): void {
+        $this->ranks->set(strtolower($playerName), ['rank' => $rankName]);
         $this->ranks->save();
-    }
-
-    private function getRankPermissions($rankName): array {
-        // Get the permissions associated with the specified rank
-        $rankPermissions = $this->ranks->get($rankName, []);
-
-        return $rankPermissions['permissions'] ?? [];
-    }
-
-    private function getPlayerRank($playerName): array {
-        $defaultRank = [
-            'prefix' => TextFormat::WHITE,
-            'suffix' => TextFormat::RESET,
-            'permissions' => [],
-        ];
-
-        $playerRank = $this->ranks->get(strtolower($playerName), $defaultRank);
-
-        // Merge player-specific permissions with rank permissions
-        $playerPermissions = $this->permissions->get(strtolower($playerName), []);
-        $mergedPermissions = array_merge($playerRank['permissions'], $playerPermissions);
-
-        return [
-            'prefix' => $playerRank['prefix'],
-            'suffix' => $playerRank['suffix'],
-            'permissions' => $mergedPermissions,
-        ];
     }
 }
