@@ -1,11 +1,18 @@
-default:
-  prefix: "&7"
-  suffix: "&r"
+---
+OWNER:
+  prefix: '§eOWNER §r '
+  suffix: ""
   permissions:
-    - "default.permission"
-
-vip:
-  prefix: "&a[VIP] "
-  suffix: "&r"
+  - '*'
+MODERATOR:
+  prefix: '§2MOD §r '
+  suffix: ""
   permissions:
-    - "vip.permission"
+  - ranksplus.moderate
+Member:
+  prefix: §7
+  suffix: ""
+  permissions: []
+bajandoesyt:
+  rank: OWNER
+...
