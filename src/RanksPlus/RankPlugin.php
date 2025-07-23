@@ -5,6 +5,7 @@ namespace RanksPlus;
 use pocketmine\plugin\PluginBase;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerJoinEvent;
+use pocketmine\event\player\PlayerChatEvent;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\permission\PermissionAttachment;
@@ -32,6 +33,34 @@ class RankPlugin extends PluginBase implements Listener {
     public function onJoin(PlayerJoinEvent $event): void {
         $player = $event->getPlayer();
         $this->applyRankToPlayer($player);
+    }
+
+    public function onChat(PlayerChatEvent $event): void {
+        $player = $event->getPlayer();
+        $name = strtolower($player->getName());
+
+        $rankName = $this->getPlayerRankName($name);
+        $rankData = $this->ranks->get($rankName);
+
+        $prefix = $rankData['prefix'] ?? "§7";
+        // Remove angle brackets from prefix if present
+        $prefix = str_replace(['<', '>'], '', $prefix);
+
+        $message = $event->getMessage();
+
+        // Cancel default chat message so we can send our own formatted message
+        $event->cancel();
+
+        // Format: PREFIX PlayerName > Message
+        $formattedMessage = "{$prefix} {$player->getName()} > {$message}";
+
+        // Send to all online players
+        foreach ($this->getServer()->getOnlinePlayers() as $p) {
+            $p->sendMessage($formattedMessage);
+        }
+
+        // Also log to console
+        $this->getServer()->getLogger()->info($formattedMessage);
     }
 
     public function onCommand(CommandSender $sender, Command $command, string $label, array $args): bool {
